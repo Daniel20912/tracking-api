@@ -7,3 +7,10 @@ services:
       - 'POSTGRES_USER=${DB_USER}'
     ports:
       - '5432:5432'
+
+  app:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - postgres
