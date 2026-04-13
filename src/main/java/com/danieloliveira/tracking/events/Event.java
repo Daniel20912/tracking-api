@@ -2,10 +2,7 @@ package com.danieloliveira.tracking.events;
 
 import com.danieloliveira.tracking.tracking.Tracking;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -14,11 +11,15 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;
+
+    @Column(nullable = false)
+    private String code;
 
     @Column(nullable = false)
     private String description;
@@ -31,6 +32,9 @@ public class Event {
 
     @Column(nullable = false)
     private LocalDateTime dateEvent;
+
+    @Column(nullable = false)
+    private String destination;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

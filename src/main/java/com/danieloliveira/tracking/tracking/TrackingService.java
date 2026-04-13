@@ -1,5 +1,6 @@
 package com.danieloliveira.tracking.tracking;
 
+import com.danieloliveira.tracking.events.EventService;
 import com.danieloliveira.tracking.trackingClient.TrackResponse;
 import com.danieloliveira.tracking.trackingClient.TrackingClient;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ public class TrackingService {
 
     private final TrackingRepository trackingRepository;
     private final TrackingClient trackingClient;
+    private final EventService eventService;
 
     public void registerNewTracking(TrackingRequestDTO trackingRequestDTO) {
         if (trackingRepository.existsByCode(trackingRequestDTO.getCode())) {
@@ -26,6 +28,8 @@ public class TrackingService {
 
         Tracking trackingEntity = toTrackingEntity(trackResponse, trackingRequestDTO);
         trackingRepository.save(trackingEntity);
+
+        eventService.saveEvent(trackResponse.eventoMaisRecente(), trackingEntity);
     }
 
     private Tracking toTrackingEntity(TrackResponse trackResponse, TrackingRequestDTO trackingRequestDTO) {

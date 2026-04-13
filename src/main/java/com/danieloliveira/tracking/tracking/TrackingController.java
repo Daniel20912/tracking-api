@@ -12,6 +12,7 @@ public class TrackingController {
 
     private final TrackingService trackingService;
 
+    // TODO retornar o status de crated e um DTO de resposta
     public void registerNewTracking(@RequestBody TrackingRequestDTO trackingRequestDTO) {
         trackingService.registerNewTracking(trackingRequestDTO);
     }
