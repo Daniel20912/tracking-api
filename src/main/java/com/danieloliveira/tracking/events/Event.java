@@ -1,4 +1,4 @@
-package com.danieloliveira.tracking.Events;
+package com.danieloliveira.tracking.events;
 
 import com.danieloliveira.tracking.tracking.Tracking;
 import jakarta.persistence.*;

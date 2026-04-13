@@ -1,11 +1,8 @@
 package com.danieloliveira.tracking.tracking;
 
-import com.danieloliveira.tracking.Events.Event;
+import com.danieloliveira.tracking.events.Event;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Tracking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,19 +25,24 @@ public class Tracking {
     @Column(nullable = false)
     private String email;
 
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
     private boolean delivered;
 
-    @OneToMany(mappedBy = "tracking", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "tracking", orphanRemoval = true)
     private List<Event> events;
 
-    public void addEvent(Event event) {
-        events.add(event);
-        event.setTracking(this);
+    @PrePersist
+    private void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
