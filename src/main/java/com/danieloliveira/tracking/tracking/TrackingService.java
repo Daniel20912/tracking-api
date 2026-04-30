@@ -16,7 +16,7 @@ public class TrackingService {
     private final TrackingClient trackingClient;
     private final EventService eventService;
 
-    public void registerNewTracking(TrackingRequestDTO trackingRequestDTO) {
+    public TrackingResponseDTO registerNewTracking(TrackingRequestDTO trackingRequestDTO) {
         if (trackingRepository.existsByCode(trackingRequestDTO.getCode())) {
             throw new RuntimeException("Code already exists!");
         }
@@ -29,7 +29,9 @@ public class TrackingService {
         Tracking trackingEntity = toTrackingEntity(trackResponse, trackingRequestDTO);
         trackingRepository.save(trackingEntity);
 
-        eventService.saveEvent(trackResponse.eventoMaisRecente(), trackingEntity);
+        var event = eventService.saveEvent(trackResponse.eventoMaisRecente(), trackingEntity);
+
+        return new TrackingResponseDTO(trackingEntity, event);
     }
 
     private Tracking toTrackingEntity(TrackResponse trackResponse, TrackingRequestDTO trackingRequestDTO) {

@@ -11,11 +11,13 @@ public class EventService {
 
     private final EventRepository eventRepository;
 
-    public void saveEvent(TrackResponse.EventResponse eventResponse, Tracking trackingEntity) {
+    public Event saveEvent(TrackResponse.EventResponse eventResponse, Tracking trackingEntity) {
 
         var Event = toEventEntity(eventResponse, trackingEntity);
 
         eventRepository.save(Event);
+
+        return Event;
     }
 
     private Event toEventEntity(TrackResponse.EventResponse eventResponse, Tracking tracking) {
