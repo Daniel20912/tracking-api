@@ -11,6 +11,7 @@ public class TrackingController {
 
     private final TrackingService trackingService;
 
+    @PostMapping
     public TrackingResponseDTO registerNewTracking(@Valid @RequestBody TrackingRequestDTO trackingRequestDTO) {
         return trackingService.registerNewTracking(trackingRequestDTO);
     }
