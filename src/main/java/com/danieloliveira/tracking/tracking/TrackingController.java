@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+// TODO opção de buscar encomenda sem o email
 @RestController
 @RequestMapping("tracking-api")
 @RequiredArgsConstructor
