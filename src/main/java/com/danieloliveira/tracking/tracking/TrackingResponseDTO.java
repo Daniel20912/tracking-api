@@ -1,26 +1,25 @@
 package com.danieloliveira.tracking.tracking;
 
-import com.danieloliveira.tracking.events.Event;
 import com.danieloliveira.tracking.events.EventResponseDTO;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 public class TrackingResponseDTO {
-    private String code;
-    private String email;
-    private LocalDateTime date;
-    private boolean delivered;
-    private List<EventResponseDTO> events;
+    private final String code;
+    private final String email;
+    private final LocalDateTime date;
+    private final boolean delivered;
+    private final List<EventResponseDTO> events;
 
-    public TrackingResponseDTO(Tracking tracking, Event event) {
+
+    public TrackingResponseDTO(Tracking tracking, List<EventResponseDTO> eventList) {
         this.code = tracking.getCode();
         this.email = tracking.getEmail();
         this.date = tracking.getCreatedAt();
         this.delivered = tracking.isDelivered();
-        this.events = List.of(new EventResponseDTO(event));
+        this.events = eventList;
     }
 }

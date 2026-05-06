@@ -1,11 +1,9 @@
 package com.danieloliveira.tracking.tracking;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-// TODO opção de buscar encomenda sem o email
 @RestController
 @RequestMapping("tracking-api")
 @RequiredArgsConstructor
@@ -13,7 +11,12 @@ public class TrackingController {
 
     private final TrackingService trackingService;
 
-    public TrackingResponseDTO registerNewTracking(@RequestBody TrackingRequestDTO trackingRequestDTO) {
+    public TrackingResponseDTO registerNewTracking(@Valid @RequestBody TrackingRequestDTO trackingRequestDTO) {
         return trackingService.registerNewTracking(trackingRequestDTO);
+    }
+
+    @GetMapping("/findByCode/{code}")
+    public TrackingResponseDTO findTrackingByCode(@PathVariable String code) {
+        return trackingService.findTrackingByCode(code);
     }
 }

@@ -5,6 +5,8 @@ import com.danieloliveira.tracking.trackingClient.TrackResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class EventService {
@@ -19,6 +21,13 @@ public class EventService {
 
         return Event;
     }
+
+    public List<Event> findAllEvents(Tracking tracking) {
+        return eventRepository.findAllByTrackingOrderByDateEventAsc(tracking);
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private Event toEventEntity(TrackResponse.EventResponse eventResponse, Tracking tracking) {
 
