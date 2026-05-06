@@ -2,10 +2,13 @@ package com.danieloliveira.tracking.tracking;
 
 import com.danieloliveira.tracking.events.Event;
 import com.danieloliveira.tracking.events.EventResponseDTO;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
 public class TrackingResponseDTO {
     private String code;
     private String email;
