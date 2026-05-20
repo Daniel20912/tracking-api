@@ -3,7 +3,7 @@ package com.danieloliveira.tracking.events;
 import lombok.Getter;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Getter
 public class EventResponseDTO implements Serializable {
@@ -11,7 +11,7 @@ public class EventResponseDTO implements Serializable {
     String description;
     String details;
     String location;
-    LocalDateTime dateEvent;
+    OffsetDateTime dateEvent;
     String destination;
 
     public EventResponseDTO(Event event) {

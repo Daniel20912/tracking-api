@@ -3,14 +3,14 @@ package com.danieloliveira.tracking.tracking;
 import com.danieloliveira.tracking.events.EventResponseDTO;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Getter
 public class TrackingResponseDTO {
     private final String code;
     private final String email;
-    private final LocalDateTime date;
+    private final OffsetDateTime date;
     private final boolean delivered;
     private final List<EventResponseDTO> events;
 

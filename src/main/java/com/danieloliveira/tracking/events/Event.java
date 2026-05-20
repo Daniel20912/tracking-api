@@ -4,7 +4,7 @@ import com.danieloliveira.tracking.tracking.Tracking;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Getter
@@ -31,12 +31,12 @@ public class Event {
     private String location;
 
     @Column(nullable = false)
-    private LocalDateTime dateEvent;
+    private OffsetDateTime dateEvent;
 
     private String destination;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tracking_id", nullable = false)
@@ -44,6 +44,6 @@ public class Event {
 
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = OffsetDateTime.now();
     }
 }

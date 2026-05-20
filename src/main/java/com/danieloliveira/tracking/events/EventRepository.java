@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findAllByTrackingOrderByDateEventAsc(Tracking tracking);
+
+    Event findFirstByTrackingOrderByDateEventDesc(Tracking tracking);
 }

@@ -27,7 +27,7 @@ public class EventService {
     }
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private Event toEventEntity(TrackResponse.EventResponse eventResponse, Tracking tracking) {
 
@@ -36,7 +36,7 @@ public class EventService {
                 .description(eventResponse.descricao())
                 .details(eventResponse.detalhe())
                 .location(eventResponse.local())
-                .dateEvent(eventResponse.data().toLocalDateTime())
+                .dateEvent(eventResponse.data())
                 .destination(eventResponse.destino())
                 .tracking(tracking)
                 .build();

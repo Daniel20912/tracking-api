@@ -3,13 +3,14 @@ package com.danieloliveira.tracking.scheduler;
 import com.danieloliveira.tracking.email.EmailSender;
 import com.danieloliveira.tracking.events.EventRepository;
 import com.danieloliveira.tracking.events.EventService;
+import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.tracking.TrackingRepository;
 import com.danieloliveira.tracking.trackingClient.TrackingClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -21,8 +22,33 @@ public class Scheduler {
     private final EventService eventService;
     private final EmailSender emailSender;
 
-    @Scheduled(fixedRate = 1000)
-    private void CheckUpdates() {
-        System.out.printf("Checking updates " + LocalDateTime.now() + "\n");
+    @Scheduled(fixedDelayString = "${scheduler.interval}")
+    private void checkUpdates() {
+
+        List<Tracking> trackings = trackingRepository.findAllByDeliveredFalse();
+
+        for (Tracking tracking : trackings) {
+            try {
+
+                // check if the code exists
+                var lastTracking = trackingClient.findTrack(tracking.getCode());
+
+                if (lastTracking == null || !lastTracking.success()) {
+                    System.err.printf("Tracking with code " + tracking.getCode() + " not found");
+                }
+
+                // find the last tracking event
+                var lastEvent = eventRepository.findFirstByTrackingOrderByDateEventDesc(tracking);
+
+                // compare the dates
+                if (lastTracking.eventoMaisRecente().data().isEqual(lastEvent.getDateEvent()))
+                    continue;
+
+
+
+            } catch (Exception e) {
+                System.err.printf("Error during checking tracking with code " + tracking.getCode());
+            }
+        }
     }
 }
