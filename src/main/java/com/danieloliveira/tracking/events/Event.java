@@ -33,7 +33,6 @@ public class Event {
     @Column(nullable = false)
     private LocalDateTime dateEvent;
 
-    @Column(nullable = false)
     private String destination;
 
     @Column(nullable = false)

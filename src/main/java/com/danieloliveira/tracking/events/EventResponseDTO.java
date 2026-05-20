@@ -1,9 +1,11 @@
 package com.danieloliveira.tracking.events;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-
+@Getter
 public class EventResponseDTO implements Serializable {
     String code;
     String description;
