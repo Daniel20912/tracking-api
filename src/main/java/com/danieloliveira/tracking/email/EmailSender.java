@@ -1,5 +1,7 @@
 package com.danieloliveira.tracking.email;
 
+import com.danieloliveira.tracking.tracking.Tracking;
+import com.danieloliveira.tracking.trackingClient.TrackResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,19 +16,24 @@ public class EmailSender {
 
     private static final Logger log = LoggerFactory.getLogger(EmailSender.class);
     private final JavaMailSender javaMailSender;
+    private final EmailTemplate emailTemplate;
 
     @Value("${spring.mail.username}")
     private String sender;
 
-    public void sendEmail(String to, String subject, String text) {
+    public void sendEmail(Tracking tracking, TrackResponse.EventResponse lastTracking) {
 
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
 
             mailMessage.setFrom(sender);
-            mailMessage.setTo(to);
-            mailMessage.setSubject(subject);
-            mailMessage.setText(text);
+            mailMessage.setTo(tracking.getEmail());
+            mailMessage.setSubject(emailTemplate.buildSubject(tracking.getCode()));
+            mailMessage.setText(emailTemplate.buildText(
+                    tracking.getCode(),
+                    lastTracking.descricao(),
+                    lastTracking.local(),
+                    lastTracking.data()));
 
             javaMailSender.send(mailMessage);
             log.info("Email sent successfully");

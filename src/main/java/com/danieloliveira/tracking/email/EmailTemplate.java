@@ -2,8 +2,13 @@ package com.danieloliveira.tracking.email;
 
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Service
 public class EmailTemplate {
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     private static final String SUBJECT = "Atualização da sua encomenda %s";
 
@@ -22,7 +27,14 @@ public class EmailTemplate {
         return String.format(SUBJECT, code);
     }
 
-    public String buildText(String code, String description, String local, String date) {
-        return String.format(TEXT, code, description, local, date);
+    public String buildText(String code, String description, String local, OffsetDateTime date) {
+        return String.format(TEXT, code, description, local, formatDate(date));
+    }
+
+    public String formatDate(OffsetDateTime date) {
+        if (date == null)
+            return "";
+
+        return date.format(DATE_TIME_FORMATTER);
     }
 }
