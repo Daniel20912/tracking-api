@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -44,7 +45,14 @@ public class Scheduler {
                 if (lastTracking.eventoMaisRecente().data().isEqual(lastEvent.getDateEvent()))
                     continue;
 
+                // TODO send email
 
+
+                // check if code is BDE
+                if (Objects.equals(lastTracking.eventoMaisRecente().codigo(), "BDE")) {
+                    tracking.setDelivered(true);
+                    trackingRepository.save(tracking);
+                }
 
             } catch (Exception e) {
                 System.err.printf("Error during checking tracking with code " + tracking.getCode());

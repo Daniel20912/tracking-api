@@ -2,6 +2,8 @@ package com.danieloliveira.tracking.trackingClient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.time.OffsetDateTime;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record TrackResponse(
         String codigo,
@@ -15,7 +17,7 @@ public record TrackResponse(
             String codigo,
             String descricao,
             String detalhe,
-            java.time.OffsetDateTime data,
+            OffsetDateTime data,
             String local,
             String destino
     ) {
