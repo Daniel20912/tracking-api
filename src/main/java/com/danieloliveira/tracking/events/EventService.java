@@ -15,7 +15,7 @@ public class EventService {
 
     public Event saveEvent(TrackResponse.EventResponse eventResponse, Tracking trackingEntity) {
 
-        var Event = toEventEntity(eventResponse, trackingEntity);
+        var Event = EventMapper.toEventEntity(eventResponse, trackingEntity);
 
         eventRepository.save(Event);
 
@@ -24,21 +24,5 @@ public class EventService {
 
     public List<Event> findAllEvents(Tracking tracking) {
         return eventRepository.findAllByTrackingOrderByDateEventAsc(tracking);
-    }
-
-
-    /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    private Event toEventEntity(TrackResponse.EventResponse eventResponse, Tracking tracking) {
-
-        return Event.builder()
-                .code(eventResponse.codigo())
-                .description(eventResponse.descricao())
-                .details(eventResponse.detalhe())
-                .location(eventResponse.local())
-                .dateEvent(eventResponse.data())
-                .destination(eventResponse.destino())
-                .tracking(tracking)
-                .build();
     }
 }

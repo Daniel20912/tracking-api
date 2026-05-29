@@ -1,6 +1,7 @@
 package com.danieloliveira.tracking.scheduler;
 
 import com.danieloliveira.tracking.email.EmailSender;
+import com.danieloliveira.tracking.events.EventMapper;
 import com.danieloliveira.tracking.events.EventRepository;
 import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.tracking.TrackingRepository;
@@ -43,6 +44,10 @@ class Scheduler {
                 // compare the dates
                 if (lastTracking.eventoMaisRecente().data().isEqual(lastEvent.getDateEvent()))
                     continue;
+
+                // save event in database
+                var newEvent = EventMapper.toEventEntity(lastTracking.eventoMaisRecente(), lastEvent.getTracking());
+                eventRepository.save(newEvent);
 
                 // send email
                 emailSender.sendEmail(tracking, lastTracking.eventoMaisRecente());
