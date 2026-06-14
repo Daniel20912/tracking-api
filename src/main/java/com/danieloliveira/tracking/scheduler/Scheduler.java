@@ -40,12 +40,8 @@ class Scheduler {
                 // find the last tracking event
                 var lastEvent = eventRepository.findFirstByTrackingOrderByDateEventDesc(tracking);
 
-                if (lastEvent != null && lastTracking.eventoMaisRecente().data().equals(lastEvent.getDateEvent()))
-                    continue;
-
-                // compare the dates
-                assert lastEvent != null;
-                if (lastTracking.eventoMaisRecente().data().isEqual(lastEvent.getDateEvent()))
+                // compare dates
+                if (lastEvent != null && lastTracking.eventoMaisRecente().data().isEqual(lastEvent.getDateEvent()))
                     continue;
 
                 // process tracking update
