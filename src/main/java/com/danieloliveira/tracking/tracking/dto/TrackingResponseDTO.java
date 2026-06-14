@@ -1,6 +1,7 @@
-package com.danieloliveira.tracking.tracking;
+package com.danieloliveira.tracking.tracking.dto;
 
-import com.danieloliveira.tracking.events.EventResponseDTO;
+import com.danieloliveira.tracking.events.dto.EventResponseDTO;
+import com.danieloliveira.tracking.tracking.Tracking;
 import lombok.Getter;
 
 import java.time.OffsetDateTime;

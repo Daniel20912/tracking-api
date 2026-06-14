@@ -4,8 +4,8 @@ import com.danieloliveira.tracking.events.EventRepository;
 import com.danieloliveira.tracking.events.EventService;
 import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.tracking.TrackingRepository;
-import com.danieloliveira.tracking.trackingClient.TrackResponse;
-import com.danieloliveira.tracking.trackingClient.TrackingClient;
+import com.danieloliveira.tracking.client.dto.TrackResponse;
+import com.danieloliveira.tracking.client.TrackingClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -69,7 +69,7 @@ class SchedulerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Deve enviar email quando há novo evento")
+    @DisplayName("Deve enviar email e salvar novo evento quando há atualização")
     void shouldSendEmailWhenNewEventExists() {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Em trânsito", true,
@@ -80,10 +80,11 @@ class SchedulerIntegrationTest {
         scheduler.checkUpdates();
 
         verify(javaMailSender).send(any(SimpleMailMessage.class));
+        assertThat(eventRepository.findAll()).hasSize(2); // 1 do setUp + 1 novo
     }
 
     @Test
-    @DisplayName("Não deve enviar email quando o evento é o mesmo")
+    @DisplayName("Não deve enviar email nem salvar evento quando não há atualização")
     void shouldNotSendEmailWhenEventIsTheSame() {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Em trânsito", true,
@@ -94,10 +95,11 @@ class SchedulerIntegrationTest {
         scheduler.checkUpdates();
 
         verify(javaMailSender, never()).send(any(SimpleMailMessage.class));
+        assertThat(eventRepository.findAll()).hasSize(1); // nenhum novo evento salvo
     }
 
     @Test
-    @DisplayName("Deve marcar como entregue e enviar email quando código é BDE")
+    @DisplayName("Deve marcar como entregue, enviar email e salvar evento quando código é BDE")
     void shouldMarkAsDeliveredAndSendEmailWhenBDE() {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Entregue", true,
@@ -108,11 +110,12 @@ class SchedulerIntegrationTest {
         scheduler.checkUpdates();
 
         verify(javaMailSender).send(any(SimpleMailMessage.class));
+        assertThat(eventRepository.findAll()).hasSize(2); // 1 do setUp + 1 novo
         assertThat(trackingRepository.findAll().getFirst().isDelivered()).isTrue();
     }
 
     @Test
-    @DisplayName("Não deve enviar email quando API externa falha")
+    @DisplayName("Não deve enviar email nem salvar evento quando API externa falha")
     void shouldNotSendEmailWhenApiFails() {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse(null, null, false, null, "Não encontrado")
@@ -121,43 +124,11 @@ class SchedulerIntegrationTest {
         scheduler.checkUpdates();
 
         verify(javaMailSender, never()).send(any(SimpleMailMessage.class));
+        assertThat(eventRepository.findAll()).hasSize(1); // nenhum novo evento salvo
     }
 
     @Test
-    @DisplayName("Deve enviar um email para cada tracking com novo evento")
-    void shouldSendOneEmailPerTrackingWithNewEvent() {
-        Tracking savedTracking2 = trackingRepository.save(
-                Tracking.builder()
-                        .code("BR987654321")
-                        .email("outro@email.com")
-                        .delivered(false)
-                        .build()
-        );
-
-        eventService.saveEvent(new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "De Porto Alegre para Curitiba",
-                OLD_DATE, "Porto Alegre/RS", "Curitiba/PR"
-        ), savedTracking2);
-
-        when(trackingClient.findTrack("BR123456789")).thenReturn(
-                new TrackResponse("BR123456789", "Em trânsito", true,
-                        new TrackResponse.EventResponse("OEC", "Objeto em trânsito",
-                                "Em São Paulo", NEW_DATE, "São Paulo/SP", "São Paulo/SP"), null)
-        );
-
-        when(trackingClient.findTrack("BR987654321")).thenReturn(
-                new TrackResponse("BR987654321", "Em trânsito", true,
-                        new TrackResponse.EventResponse("OEC", "Objeto em trânsito",
-                                "Em Curitiba", NEW_DATE, "Curitiba/PR", "São Paulo/SP"), null)
-        );
-
-        scheduler.checkUpdates();
-
-        verify(javaMailSender, times(2)).send(any(SimpleMailMessage.class));
-    }
-
-    @Test
-    @DisplayName("Deve enviar um email para cada nova atualização do mesmo código")
+    @DisplayName("Deve enviar um email e salvar um evento para cada nova atualização do mesmo código")
     void shouldSendOneEmailPerNewEvent() {
         var secondEvent = new TrackResponse.EventResponse(
                 "OEC", "Objeto em trânsito", "Em São Paulo", NEW_DATE, "São Paulo/SP", "São Paulo/SP"
@@ -166,18 +137,17 @@ class SchedulerIntegrationTest {
                 "OEC", "Objeto em trânsito", "Em Campinas", NEW_DATE.plusDays(1), "Campinas/SP", "São Paulo/SP"
         );
 
-        // primeira atualização
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Em trânsito", true, secondEvent, null)
         );
         scheduler.checkUpdates();
 
-        // segunda atualização
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Em trânsito", true, thirdEvent, null)
         );
         scheduler.checkUpdates();
 
         verify(javaMailSender, times(2)).send(any(SimpleMailMessage.class));
+        assertThat(eventRepository.findAll()).hasSize(3); // 1 do setUp + 2 novos
     }
 }

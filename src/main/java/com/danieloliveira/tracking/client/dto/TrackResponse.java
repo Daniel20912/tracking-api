@@ -1,4 +1,4 @@
-package com.danieloliveira.tracking.trackingClient;
+package com.danieloliveira.tracking.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

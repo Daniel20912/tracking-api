@@ -1,7 +1,7 @@
 package com.danieloliveira.tracking.email;
 
 import com.danieloliveira.tracking.tracking.Tracking;
-import com.danieloliveira.tracking.trackingClient.TrackResponse;
+import com.danieloliveira.tracking.client.dto.TrackResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

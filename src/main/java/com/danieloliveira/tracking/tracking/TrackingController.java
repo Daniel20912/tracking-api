@@ -1,5 +1,7 @@
 package com.danieloliveira.tracking.tracking;
 
+import com.danieloliveira.tracking.tracking.dto.TrackingRequestDTO;
+import com.danieloliveira.tracking.tracking.dto.TrackingResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

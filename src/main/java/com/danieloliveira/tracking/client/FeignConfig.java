@@ -1,4 +1,4 @@
-package com.danieloliveira.tracking.trackingClient;
+package com.danieloliveira.tracking.client;
 
 import feign.RequestInterceptor;
 import org.springframework.beans.factory.annotation.Value;

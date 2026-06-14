@@ -1,10 +1,12 @@
 package com.danieloliveira.tracking.tracking;
 
 import com.danieloliveira.tracking.events.Event;
-import com.danieloliveira.tracking.events.EventResponseDTO;
+import com.danieloliveira.tracking.events.dto.EventResponseDTO;
 import com.danieloliveira.tracking.events.EventService;
-import com.danieloliveira.tracking.trackingClient.TrackResponse;
-import com.danieloliveira.tracking.trackingClient.TrackingClient;
+import com.danieloliveira.tracking.tracking.dto.TrackingRequestDTO;
+import com.danieloliveira.tracking.tracking.dto.TrackingResponseDTO;
+import com.danieloliveira.tracking.client.dto.TrackResponse;
+import com.danieloliveira.tracking.client.TrackingClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

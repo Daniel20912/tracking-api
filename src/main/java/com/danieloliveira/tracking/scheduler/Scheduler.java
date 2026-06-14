@@ -5,7 +5,7 @@ import com.danieloliveira.tracking.events.EventMapper;
 import com.danieloliveira.tracking.events.EventRepository;
 import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.tracking.TrackingRepository;
-import com.danieloliveira.tracking.trackingClient.TrackingClient;
+import com.danieloliveira.tracking.client.TrackingClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

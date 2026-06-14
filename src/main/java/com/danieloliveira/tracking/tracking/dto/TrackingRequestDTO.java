@@ -1,4 +1,4 @@
-package com.danieloliveira.tracking.tracking;
+package com.danieloliveira.tracking.tracking.dto;
 
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
