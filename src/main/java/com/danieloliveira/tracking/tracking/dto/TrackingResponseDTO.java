@@ -1,6 +1,6 @@
 package com.danieloliveira.tracking.tracking.dto;
 
-import com.danieloliveira.tracking.events.dto.EventResponseDTO;
+import com.danieloliveira.tracking.event.dto.EventResponseDTO;
 import com.danieloliveira.tracking.tracking.Tracking;
 import lombok.Getter;
 

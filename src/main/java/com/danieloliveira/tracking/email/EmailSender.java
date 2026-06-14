@@ -1,5 +1,6 @@
 package com.danieloliveira.tracking.email;
 
+import com.danieloliveira.tracking.exception.EmailSendException;
 import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.client.dto.TrackResponse;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class EmailSender {
 
         } catch (Exception e) {
             log.error("Email sent failed");
+            throw new EmailSendException("Error sending email");
         }
     }
 }

@@ -1,18 +1,20 @@
 package com.danieloliveira.tracking.scheduler;
 
+import com.danieloliveira.tracking.client.TrackingClient;
 import com.danieloliveira.tracking.email.EmailSender;
-import com.danieloliveira.tracking.events.EventMapper;
-import com.danieloliveira.tracking.events.EventRepository;
+import com.danieloliveira.tracking.event.EventMapper;
+import com.danieloliveira.tracking.event.EventRepository;
 import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.tracking.TrackingRepository;
-import com.danieloliveira.tracking.client.TrackingClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 class Scheduler {
@@ -34,7 +36,7 @@ class Scheduler {
                 var lastTracking = trackingClient.findTrack(tracking.getCode());
 
                 if (lastTracking == null || !lastTracking.success()) {
-                    System.err.printf("Tracking with code " + tracking.getCode() + " not found");
+                    log.error("Tracking with code {} not found", tracking.getCode());
                     continue;
                 }
 
@@ -59,7 +61,7 @@ class Scheduler {
                 }
 
             } catch (Exception e) {
-                System.err.printf("Error during checking tracking with code " + tracking.getCode());
+                log.error("Error during checking tracking with code {}", tracking.getCode());
             }
         }
     }

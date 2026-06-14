@@ -1,4 +1,4 @@
-package com.danieloliveira.tracking.events;
+package com.danieloliveira.tracking.event;
 
 import com.danieloliveira.tracking.tracking.Tracking;
 import org.springframework.data.jpa.repository.JpaRepository;

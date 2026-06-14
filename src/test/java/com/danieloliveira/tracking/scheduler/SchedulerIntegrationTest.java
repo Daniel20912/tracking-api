@@ -1,7 +1,7 @@
 package com.danieloliveira.tracking.scheduler;
 
-import com.danieloliveira.tracking.events.EventRepository;
-import com.danieloliveira.tracking.events.EventService;
+import com.danieloliveira.tracking.event.EventRepository;
+import com.danieloliveira.tracking.event.EventService;
 import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.tracking.TrackingRepository;
 import com.danieloliveira.tracking.client.dto.TrackResponse;

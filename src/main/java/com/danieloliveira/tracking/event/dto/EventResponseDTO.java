@@ -1,6 +1,6 @@
-package com.danieloliveira.tracking.events.dto;
+package com.danieloliveira.tracking.event.dto;
 
-import com.danieloliveira.tracking.events.Event;
+import com.danieloliveira.tracking.event.Event;
 import lombok.Getter;
 
 import java.io.Serializable;

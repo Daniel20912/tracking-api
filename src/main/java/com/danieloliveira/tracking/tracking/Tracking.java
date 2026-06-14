@@ -1,6 +1,6 @@
 package com.danieloliveira.tracking.tracking;
 
-import com.danieloliveira.tracking.events.Event;
+import com.danieloliveira.tracking.event.Event;
 import jakarta.persistence.*;
 import lombok.*;
 
