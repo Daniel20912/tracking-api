@@ -1,11 +1,11 @@
 package com.danieloliveira.tracking.scheduler;
 
+import com.danieloliveira.tracking.client.TrackingClient;
+import com.danieloliveira.tracking.client.dto.TrackResponse;
+import com.danieloliveira.tracking.event.Event;
 import com.danieloliveira.tracking.event.EventRepository;
-import com.danieloliveira.tracking.event.EventService;
 import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.tracking.TrackingRepository;
-import com.danieloliveira.tracking.client.dto.TrackResponse;
-import com.danieloliveira.tracking.client.TrackingClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,14 +13,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -31,17 +29,17 @@ class SchedulerIntegrationTest {
     private static final OffsetDateTime OLD_DATE = OffsetDateTime.of(2024, 1, 1, 10, 0, 0, 0, ZoneOffset.UTC);
     private static final OffsetDateTime NEW_DATE = OffsetDateTime.of(2024, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC);
     @Autowired
-    Scheduler scheduler;
+    private Scheduler scheduler;
     @Autowired
     private TrackingRepository trackingRepository;
     @Autowired
     private EventRepository eventRepository;
-    @Autowired
-    private EventService eventService;
     @MockitoBean
     private TrackingClient trackingClient;
     @MockitoBean
-    private JavaMailSender javaMailSender;
+    private TrackingUpdateService trackingUpdateService;
+    @MockitoBean
+    private JavaMailSender javaMailSender; // necessário para o contexto subir
 
     @BeforeEach
     void setUp() {
@@ -56,10 +54,14 @@ class SchedulerIntegrationTest {
                         .build()
         );
 
-        eventService.saveEvent(new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "De Curitiba para São Paulo",
-                OLD_DATE, "Curitiba/PR", "São Paulo/SP"
-        ), savedTracking);
+        eventRepository.save(Event.builder()
+                .code("OEC")
+                .description("Objeto em trânsito")
+                .details("De Curitiba para São Paulo")
+                .dateEvent(OLD_DATE)
+                .location("Curitiba/PR")
+                .tracking(savedTracking)
+                .build());
     }
 
     @AfterEach
@@ -69,8 +71,8 @@ class SchedulerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Deve enviar email e salvar novo evento quando há atualização")
-    void shouldSendEmailWhenNewEventExists() {
+    @DisplayName("Deve acionar processamento quando há novo evento")
+    void shouldProcessUpdateWhenNewEventExists() {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Em trânsito", true,
                         new TrackResponse.EventResponse("OEC", "Objeto em trânsito",
@@ -79,13 +81,15 @@ class SchedulerIntegrationTest {
 
         scheduler.checkUpdates();
 
-        verify(javaMailSender).send(any(SimpleMailMessage.class));
-        assertThat(eventRepository.findAll()).hasSize(2); // 1 do setUp + 1 novo
+        verify(trackingUpdateService).processTrackingUpdate(
+                argThat(t -> t.getCode().equals("BR123456789")),
+                any(TrackResponse.EventResponse.class)
+        );
     }
 
     @Test
-    @DisplayName("Não deve enviar email nem salvar evento quando não há atualização")
-    void shouldNotSendEmailWhenEventIsTheSame() {
+    @DisplayName("Não deve acionar processamento quando o evento é o mesmo")
+    void shouldNotProcessUpdateWhenEventIsTheSame() {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Em trânsito", true,
                         new TrackResponse.EventResponse("OEC", "Objeto em trânsito",
@@ -94,60 +98,73 @@ class SchedulerIntegrationTest {
 
         scheduler.checkUpdates();
 
-        verify(javaMailSender, never()).send(any(SimpleMailMessage.class));
-        assertThat(eventRepository.findAll()).hasSize(1); // nenhum novo evento salvo
+        verify(trackingUpdateService, never()).processTrackingUpdate(any(), any());
     }
 
     @Test
-    @DisplayName("Deve marcar como entregue, enviar email e salvar evento quando código é BDE")
-    void shouldMarkAsDeliveredAndSendEmailWhenBDE() {
+    @DisplayName("Deve acionar processamento quando código do evento é BDE")
+    void shouldProcessUpdateWhenEventCodeIsBDE() {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Entregue", true,
                         new TrackResponse.EventResponse("BDE", "Objeto entregue ao destinatário",
-                                "Entregue", NEW_DATE, "São Paulo/SP", "São Paulo/SP"), null)
+                                "Entregue", NEW_DATE, "São Paulo/SP", null), null)
         );
 
         scheduler.checkUpdates();
 
-        verify(javaMailSender).send(any(SimpleMailMessage.class));
-        assertThat(eventRepository.findAll()).hasSize(2); // 1 do setUp + 1 novo
-        assertThat(trackingRepository.findAll().getFirst().isDelivered()).isTrue();
+        verify(trackingUpdateService).processTrackingUpdate(
+                argThat(t -> t.getCode().equals("BR123456789")),
+                argThat(e -> e.codigo().equals("BDE"))
+        );
     }
 
     @Test
-    @DisplayName("Não deve enviar email nem salvar evento quando API externa falha")
-    void shouldNotSendEmailWhenApiFails() {
+    @DisplayName("Não deve acionar processamento quando API externa falha")
+    void shouldNotProcessUpdateWhenApiFails() {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse(null, null, false, null, "Não encontrado")
         );
 
         scheduler.checkUpdates();
 
-        verify(javaMailSender, never()).send(any(SimpleMailMessage.class));
-        assertThat(eventRepository.findAll()).hasSize(1); // nenhum novo evento salvo
+        verify(trackingUpdateService, never()).processTrackingUpdate(any(), any());
     }
 
     @Test
-    @DisplayName("Deve enviar um email e salvar um evento para cada nova atualização do mesmo código")
-    void shouldSendOneEmailPerNewEvent() {
-        var secondEvent = new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "Em São Paulo", NEW_DATE, "São Paulo/SP", "São Paulo/SP"
-        );
-        var thirdEvent = new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "Em Campinas", NEW_DATE.plusDays(1), "Campinas/SP", "São Paulo/SP"
-        );
+    @DisplayName("Deve acionar processamento quando não há eventos anteriores")
+    void shouldProcessUpdateWhenNoEventsExist() {
+        eventRepository.deleteAll();
 
         when(trackingClient.findTrack("BR123456789")).thenReturn(
-                new TrackResponse("BR123456789", "Em trânsito", true, secondEvent, null)
+                new TrackResponse("BR123456789", "Em trânsito", true,
+                        new TrackResponse.EventResponse("OEC", "Objeto em trânsito",
+                                "Em São Paulo", NEW_DATE, "São Paulo/SP", "São Paulo/SP"), null)
+        );
+
+        scheduler.checkUpdates();
+
+        verify(trackingUpdateService).processTrackingUpdate(
+                argThat(t -> t.getCode().equals("BR123456789")),
+                any(TrackResponse.EventResponse.class)
+        );
+    }
+
+    @Test
+    @DisplayName("Deve acionar processamento uma vez para cada novo evento")
+    void shouldProcessUpdateForEachNewEvent() {
+        when(trackingClient.findTrack("BR123456789")).thenReturn(new TrackResponse("BR123456789", "Em trânsito", true,
+                new TrackResponse.EventResponse("OEC", "Em trânsito", "Em São Paulo", NEW_DATE, "São Paulo/SP", null), null)
         );
         scheduler.checkUpdates();
 
-        when(trackingClient.findTrack("BR123456789")).thenReturn(
-                new TrackResponse("BR123456789", "Em trânsito", true, thirdEvent, null)
+        when(trackingClient.findTrack("BR123456789")).thenReturn(new TrackResponse("BR123456789", "Em trânsito", true,
+                new TrackResponse.EventResponse("OEC", "Em trânsito", "Em Campinas", NEW_DATE.plusDays(1), "Campinas/SP", null), null)
         );
         scheduler.checkUpdates();
 
-        verify(javaMailSender, times(2)).send(any(SimpleMailMessage.class));
-        assertThat(eventRepository.findAll()).hasSize(3); // 1 do setUp + 2 novos
+        verify(trackingUpdateService, times(2)).processTrackingUpdate(
+                argThat(t -> t.getCode().equals("BR123456789")),
+                any(TrackResponse.EventResponse.class)
+        );
     }
 }
