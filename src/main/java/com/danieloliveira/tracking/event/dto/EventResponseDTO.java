@@ -20,7 +20,7 @@ public class EventResponseDTO implements Serializable {
         this.description = event.getDescription();
         this.details = event.getDetails();
         this.location = event.getLocation();
-        this.dateEvent = event.getCreatedAt();
+        this.dateEvent = event.getDateEvent();
         this.destination = event.getDestination();
     }
 }
