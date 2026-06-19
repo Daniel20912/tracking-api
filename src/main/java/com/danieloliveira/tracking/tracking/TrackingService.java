@@ -5,10 +5,12 @@ import com.danieloliveira.tracking.client.dto.TrackResponse;
 import com.danieloliveira.tracking.event.Event;
 import com.danieloliveira.tracking.event.EventService;
 import com.danieloliveira.tracking.event.dto.EventResponseDTO;
+import com.danieloliveira.tracking.exception.ExternalServiceException;
 import com.danieloliveira.tracking.exception.TrackingCodeAlreadyExistsException;
 import com.danieloliveira.tracking.exception.TrackingNotFoundException;
 import com.danieloliveira.tracking.tracking.dto.TrackingRequestDTO;
 import com.danieloliveira.tracking.tracking.dto.TrackingResponseDTO;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,13 @@ public class TrackingService {
             throw new TrackingCodeAlreadyExistsException("Code already exists!");
         }
 
-        var trackResponse = trackingClient.findTrack(trackingRequestDTO.getCode());
+        TrackResponse trackResponse;
+        try {
+            trackResponse = trackingClient.findTrack(trackingRequestDTO.getCode());
+        } catch (FeignException ex) {
+            throw new ExternalServiceException("Unable to access tracking provider" + ex.getMessage());
+        }
+
         if (!trackResponse.success()) throw new TrackingNotFoundException("Tracking code not found!");
 
         Tracking trackingEntity = toTrackingEntity(trackResponse, trackingRequestDTO);

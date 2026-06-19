@@ -62,10 +62,19 @@ public class GlobalExceptionHandling {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorMessage> dataIntegrityViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
+        log.error("Data integrity violation", ex);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new ErrorMessage(request, HttpStatus.BAD_REQUEST, "Code already exists: "  + ex.getMessage()));
+                .body(new ErrorMessage(request, HttpStatus.BAD_REQUEST, "Tracking code already exists"));
+    }
+
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<ErrorMessage> externalServiceException(ExternalServiceException ex, HttpServletRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorMessage(request, HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
