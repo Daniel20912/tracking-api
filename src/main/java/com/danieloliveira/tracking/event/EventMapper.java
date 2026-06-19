@@ -1,10 +1,8 @@
 package com.danieloliveira.tracking.event;
 
-import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.client.dto.TrackResponse;
-import org.springframework.stereotype.Component;
+import com.danieloliveira.tracking.tracking.Tracking;
 
-@Component
 public class EventMapper {
 
     public static Event toEventEntity(TrackResponse.EventResponse eventResponse, Tracking tracking) {
