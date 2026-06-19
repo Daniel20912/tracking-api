@@ -32,7 +32,7 @@ class Scheduler {
                 // check if the code exists
                 var lastTracking = trackingClient.findTrack(tracking.getCode());
 
-                if (lastTracking == null || !lastTracking.success()) {
+                if (lastTracking == null || !lastTracking.success() || lastTracking.eventoMaisRecente() == null) {
                     log.error("Tracking with code {} not found", tracking.getCode());
                     continue;
                 }
@@ -48,7 +48,7 @@ class Scheduler {
                 trackingUpdateService.processTrackingUpdate(tracking, lastTracking.eventoMaisRecente());
 
             } catch (Exception e) {
-                log.error("Error during checking tracking with code {}", tracking.getCode());
+                log.error("Error during checking tracking with code {}: {}", tracking.getCode(), e.getMessage());
             }
         }
     }
