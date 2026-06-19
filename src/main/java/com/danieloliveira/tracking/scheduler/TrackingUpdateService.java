@@ -15,14 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TrackingUpdateService {
+class TrackingUpdateService {
 
     private final EventRepository eventRepository;
     private final TrackingRepository trackingRepository;
     private final EmailSender emailSender;
 
     @Transactional
-    public void processTrackingUpdate(Tracking tracking, TrackResponse.EventResponse newEventData) {
+    void processTrackingUpdate(Tracking tracking, TrackResponse.EventResponse newEventData) {
 
         // save event in database
         var newEvent = EventMapper.toEventEntity(newEventData, tracking);
