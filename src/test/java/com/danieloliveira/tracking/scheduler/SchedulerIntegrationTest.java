@@ -76,7 +76,7 @@ class SchedulerIntegrationTest {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Em trânsito", true,
                         new TrackResponse.EventResponse("OEC", "Objeto em trânsito",
-                                "Em São Paulo", NEW_DATE, "São Paulo/SP", "São Paulo/SP"), null)
+                                "Em São Paulo", NEW_DATE.toLocalDateTime(), "São Paulo/SP", "São Paulo/SP"), null)
         );
 
         scheduler.checkUpdates();
@@ -93,7 +93,7 @@ class SchedulerIntegrationTest {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Em trânsito", true,
                         new TrackResponse.EventResponse("OEC", "Objeto em trânsito",
-                                "De Curitiba para São Paulo", OLD_DATE, "Curitiba/PR", "São Paulo/SP"), null)
+                                "De Curitiba para São Paulo", OLD_DATE.toLocalDateTime(), "Curitiba/PR", "São Paulo/SP"), null)
         );
 
         scheduler.checkUpdates();
@@ -107,7 +107,7 @@ class SchedulerIntegrationTest {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Entregue", true,
                         new TrackResponse.EventResponse("BDE", "Objeto entregue ao destinatário",
-                                "Entregue", NEW_DATE, "São Paulo/SP", null), null)
+                                "Entregue", NEW_DATE.toLocalDateTime(), "São Paulo/SP", null), null)
         );
 
         scheduler.checkUpdates();
@@ -138,7 +138,7 @@ class SchedulerIntegrationTest {
         when(trackingClient.findTrack("BR123456789")).thenReturn(
                 new TrackResponse("BR123456789", "Em trânsito", true,
                         new TrackResponse.EventResponse("OEC", "Objeto em trânsito",
-                                "Em São Paulo", NEW_DATE, "São Paulo/SP", "São Paulo/SP"), null)
+                                "Em São Paulo", NEW_DATE.toLocalDateTime(), "São Paulo/SP", "São Paulo/SP"), null)
         );
 
         scheduler.checkUpdates();
@@ -153,12 +153,12 @@ class SchedulerIntegrationTest {
     @DisplayName("Deve acionar processamento uma vez para cada novo evento")
     void shouldProcessUpdateForEachNewEvent() {
         when(trackingClient.findTrack("BR123456789")).thenReturn(new TrackResponse("BR123456789", "Em trânsito", true,
-                new TrackResponse.EventResponse("OEC", "Em trânsito", "Em São Paulo", NEW_DATE, "São Paulo/SP", null), null)
+                new TrackResponse.EventResponse("OEC", "Em trânsito", "Em São Paulo", NEW_DATE.toLocalDateTime(), "São Paulo/SP", null), null)
         );
         scheduler.checkUpdates();
 
         when(trackingClient.findTrack("BR123456789")).thenReturn(new TrackResponse("BR123456789", "Em trânsito", true,
-                new TrackResponse.EventResponse("OEC", "Em trânsito", "Em Campinas", NEW_DATE.plusDays(1), "Campinas/SP", null), null)
+                new TrackResponse.EventResponse("OEC", "Em trânsito", "Em Campinas", NEW_DATE.plusDays(1).toLocalDateTime(), "Campinas/SP", null), null)
         );
         scheduler.checkUpdates();
 

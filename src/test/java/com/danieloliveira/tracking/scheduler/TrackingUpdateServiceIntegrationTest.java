@@ -67,7 +67,7 @@ class TrackingUpdateServiceIntegrationTest {
     @DisplayName("Deve salvar o novo evento no banco")
     void shouldSaveEventInDatabase() {
         var eventData = new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE, "Curitiba/PR", "São Paulo/SP"
+                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE.toLocalDateTime(), "Curitiba/PR", "São Paulo/SP"
         );
 
         trackingUpdateService.processTrackingUpdate(savedTracking, eventData);
@@ -82,7 +82,7 @@ class TrackingUpdateServiceIntegrationTest {
     @DisplayName("Deve marcar tracking como entregue quando código do evento é BDE")
     void shouldMarkTrackingAsDeliveredWhenBDE() {
         var bdeEvent = new TrackResponse.EventResponse(
-                "BDE", "Objeto entregue ao destinatário", "Entregue", EVENT_DATE, "São Paulo/SP", null
+                "BDE", "Objeto entregue ao destinatário", "Entregue", EVENT_DATE.toLocalDateTime(), "São Paulo/SP", null
         );
 
         trackingUpdateService.processTrackingUpdate(savedTracking, bdeEvent);
@@ -94,7 +94,7 @@ class TrackingUpdateServiceIntegrationTest {
     @DisplayName("Não deve marcar tracking como entregue quando código não é BDE")
     void shouldNotMarkTrackingAsDeliveredWhenNotBDE() {
         var eventData = new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE, "Curitiba/PR", "São Paulo/SP"
+                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE.toLocalDateTime(), "Curitiba/PR", "São Paulo/SP"
         );
 
         trackingUpdateService.processTrackingUpdate(savedTracking, eventData);
@@ -106,7 +106,7 @@ class TrackingUpdateServiceIntegrationTest {
     @DisplayName("Deve enviar email após salvar o evento")
     void shouldSendEmailAfterSavingEvent() {
         var eventData = new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE, "Curitiba/PR", "São Paulo/SP"
+                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE.toLocalDateTime(), "Curitiba/PR", "São Paulo/SP"
         );
 
         trackingUpdateService.processTrackingUpdate(savedTracking, eventData);
@@ -121,7 +121,7 @@ class TrackingUpdateServiceIntegrationTest {
     @DisplayName("Não deve lançar exceção quando envio de email falha, e deve salvar o evento mesmo assim")
     void shouldNotThrowExceptionWhenEmailFailsAndShouldStillSaveEvent() {
         var eventData = new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE, "Curitiba/PR", "São Paulo/SP"
+                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE.toLocalDateTime(), "Curitiba/PR", "São Paulo/SP"
         );
         doThrow(new EmailSendException("Falha no envio"))
                 .when(emailSender).sendEmail(any(), any());

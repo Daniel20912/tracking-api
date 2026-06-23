@@ -67,7 +67,6 @@ class TrackResponseDeserializationTest {
         assertThat(event.data().getDayOfMonth()).isEqualTo(15);
         assertThat(event.data().getHour()).isEqualTo(14);
         assertThat(event.data().getMinute()).isEqualTo(30);
-        assertThat(event.data().getOffset().getTotalSeconds()).isEqualTo(0); // UTC
     }
 
     @Test
