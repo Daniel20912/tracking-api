@@ -11,6 +11,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
+
 @RequiredArgsConstructor
 @Service
 public class EmailSender {
@@ -34,7 +36,7 @@ public class EmailSender {
                     tracking.getCode(),
                     lastTracking.descricao(),
                     lastTracking.local(),
-                    lastTracking.data()));
+                    OffsetDateTime.from(lastTracking.data())));
 
             javaMailSender.send(mailMessage);
             log.info("Email sent successfully");
