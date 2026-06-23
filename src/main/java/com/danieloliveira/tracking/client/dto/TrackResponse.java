@@ -2,7 +2,7 @@ package com.danieloliveira.tracking.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record TrackResponse(
@@ -17,7 +17,7 @@ public record TrackResponse(
             String codigo,
             String descricao,
             String detalhe,
-            OffsetDateTime data,
+            LocalDateTime data,
             String local,
             String destino
     ) {

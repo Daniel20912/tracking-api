@@ -43,7 +43,7 @@ class Scheduler {
                 // compare dates
                 if (lastEvent != null
                         && lastEvent.getCode().equals(lastTracking.eventoMaisRecente().codigo())
-                        && lastTracking.eventoMaisRecente().data().isEqual(lastEvent.getDateEvent()))
+                        && lastTracking.eventoMaisRecente().data().isEqual(lastEvent.getDateEvent().toLocalDateTime()))
                     continue;
 
                 // process tracking update
