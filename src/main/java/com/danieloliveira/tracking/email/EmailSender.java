@@ -44,11 +44,14 @@ public class EmailSender {
             );
 
             brevoClient.sendTransactionalEmail(request);
-            log.info("Email sent successfully");
+            log.info("Email sent successfully to {}", tracking.getEmail());
 
+        } catch (feign.FeignException e) {
+            log.error("Brevo API integration error: Status {} - Response: {}", e.status(), e.contentUTF8());
+            throw new EmailSendException("Failed to send email via Brevo: " + e.contentUTF8());
         } catch (Exception e) {
-            log.error("Email sent failed");
-            throw new EmailSendException("Error sending email: " + e.getMessage());
+            log.error("Unexpected error occurred while sending email", e);
+            throw new EmailSendException("Unexpected error during email sending: " + e.getMessage());
         }
     }
 }
