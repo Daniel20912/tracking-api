@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -32,6 +32,8 @@ public class EmailSender {
     public void sendEmail(Tracking tracking, TrackResponse.EventResponse lastTracking) {
 
         try {
+            var offsetDateTime = lastTracking.data().atZone(ZoneId.of("UTC")).toOffsetDateTime();
+
             BrevoEmailRequest request = new BrevoEmailRequest(
                     new BrevoSender(senderName, senderEmail),
                     List.of(new BrevoRecipient(tracking.getEmail())),
@@ -40,7 +42,7 @@ public class EmailSender {
                             tracking.getCode(),
                             lastTracking.descricao(),
                             lastTracking.local(),
-                            OffsetDateTime.from(lastTracking.data()))
+                            offsetDateTime)
             );
 
             brevoClient.sendTransactionalEmail(request);
