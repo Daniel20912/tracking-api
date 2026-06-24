@@ -2,6 +2,7 @@ package com.danieloliveira.tracking.scheduler;
 
 import com.danieloliveira.tracking.client.TrackingClient;
 import com.danieloliveira.tracking.client.dto.TrackResponse;
+import com.danieloliveira.tracking.email.BrevoClient;
 import com.danieloliveira.tracking.event.Event;
 import com.danieloliveira.tracking.event.EventRepository;
 import com.danieloliveira.tracking.tracking.Tracking;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.OffsetDateTime;
@@ -39,7 +39,7 @@ class SchedulerIntegrationTest {
     @MockitoBean
     private TrackingUpdateService trackingUpdateService;
     @MockitoBean
-    private JavaMailSender javaMailSender; // necessário para o contexto subir
+    private BrevoClient brevoClient; // necessário para o contexto subir
 
     @BeforeEach
     void setUp() {
