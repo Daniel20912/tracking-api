@@ -4,11 +4,13 @@ import com.danieloliveira.tracking.client.TrackingClient;
 import com.danieloliveira.tracking.event.EventRepository;
 import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.tracking.TrackingRepository;
+import com.danieloliveira.tracking.util.DateUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Slf4j
@@ -41,9 +43,11 @@ class Scheduler {
                 var lastEvent = eventRepository.findFirstByTrackingOrderByDateEventDesc(tracking);
 
                 // compare dates
+                OffsetDateTime newData = DateUtils.toOffsetDateTime(lastTracking.eventoMaisRecente().data());
+
                 if (lastEvent != null
                         && lastEvent.getCode().equals(lastTracking.eventoMaisRecente().codigo())
-                        && lastTracking.eventoMaisRecente().data().isEqual(lastEvent.getDateEvent().toLocalDateTime()))
+                        && newData.isEqual(lastEvent.getDateEvent()))
                     continue;
 
                 // process tracking update

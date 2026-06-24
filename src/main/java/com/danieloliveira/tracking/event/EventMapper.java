@@ -2,8 +2,7 @@ package com.danieloliveira.tracking.event;
 
 import com.danieloliveira.tracking.client.dto.TrackResponse;
 import com.danieloliveira.tracking.tracking.Tracking;
-
-import java.time.ZoneId;
+import com.danieloliveira.tracking.util.DateUtils;
 
 public class EventMapper {
 
@@ -14,7 +13,7 @@ public class EventMapper {
                 .description(eventResponse.descricao())
                 .details(eventResponse.detalhe())
                 .location(eventResponse.local())
-                .dateEvent(eventResponse.data().atZone(ZoneId.of("America/Sao_Paulo")).toOffsetDateTime())
+                .dateEvent(DateUtils.toOffsetDateTime(eventResponse.data()))
                 .destination(eventResponse.destino())
                 .tracking(tracking)
                 .build();
