@@ -24,12 +24,12 @@ https://tracking-api-pb24.onrender.com/swagger-ui.html
 
 ## 🧠 Como funciona
 
-1. O usuário cadastra um código de rastreio e um email via `POST /rastreios`
+1. O usuário cadastra um código de rastreio e um email via `POST /tracking-api`
 2. A API consulta a API externa **SeuRastreio**, valida o código e salva o primeiro evento no banco
 3. Um **scheduler** roda automaticamente em segundo plano, verificando periodicamente se há atualizações para cada rastreio ainda não entregue
-4. Sempre que uma atualização é detectada, o novo evento é salvo no banco e um **email é disparado** para o usuário
+4. Sempre que uma atualização é detectada, o novo evento é salvo no banco e um **email é disparado** para o usuário via **Brevo**
 5. Quando a encomenda é entregue, o monitoramento daquele rastreio é encerrado automaticamente
-6. O histórico completo pode ser consultado em qualquer momento via `GET /rastreios/{codigo}`, sem necessidade de nova consulta à API externa
+6. O histórico completo pode ser consultado em qualquer momento via `GET /tracking-api/findByCode/{codigo}`, sem necessidade de nova consulta à API externa
 
 ---
 
@@ -38,11 +38,11 @@ https://tracking-api-pb24.onrender.com/swagger-ui.html
 O projeto é organizado por **domínio**, separando claramente as responsabilidades:
 
 ```
-com.seuprojeto.tracking
+com.danieloliveira.tracking
 ├── tracking/        → cadastro e consulta de rastreios
 ├── event/           → persistência e regras dos eventos de rastreio
 ├── client/          → integração com a API externa (Feign Client)
-├── email/           → montagem e envio de notificações por email
+├── email/           → montagem e envio de notificações por email via Brevo
 ├── scheduler/       → job agendado que verifica atualizações periodicamente
 └── exception/       → tratamento centralizado de erros
 ```
@@ -58,9 +58,10 @@ com.seuprojeto.tracking
 ## 🛠️ Tecnologias utilizadas
 
 - **Java 21**
-- **Spring Boot 3** (Web, Data JPA, Validation, Mail, Scheduling)
+- **Spring Boot 3** (Web, Data JPA, Validation, Scheduling)
 - **PostgreSQL**
-- **OpenFeign** — comunicação com a API externa
+- **OpenFeign** — comunicação com a API externa de rastreio e com a API do Brevo
+- **Brevo API** — envio de notificações por email via HTTP, sem uso de SMTP
 - **Lombok**
 - **SpringDoc OpenAPI (Swagger)**
 - **JUnit + Mockito + H2** — testes de integração
@@ -100,13 +101,13 @@ Retorna o rastreio com o histórico completo de eventos salvos no banco, ordenad
 
 - Docker e Docker Compose instalados
 - Uma chave de API da [SeuRastreio](https://seurastreio.com.br)
-- Uma conta de email com App Password (recomendado: conta dedicada ao projeto)
+- Uma conta no [Brevo](https://brevo.com) com uma API Key gerada e um sender verificado
 
 ### Passo a passo
 
 1. Clone o repositório
 ```bash
-git clone https://github.com/seu-usuario/tracking-api.git
+git clone https://github.com/Daniel20912/tracking-api.git
 cd tracking-api
 ```
 
@@ -131,9 +132,9 @@ docker compose up --build
 | `SPRING_DATASOURCE_URL` | URL de conexão JDBC |
 | `SPRING_DATASOURCE_USERNAME` | Usuário da conexão JDBC |
 | `SPRING_DATASOURCE_PASSWORD` | Senha da conexão JDBC |
-| `SITERASTREIO_API_KEY` | Chave de acesso da API externa |
-| `MAIL_USERNAME` | Email remetente das notificações |
-| `MAIL_PASSWORD` | App Password do email remetente |
+| `SITERASTREIO_API_KEY` | Chave de acesso da API externa de rastreio |
+| `BREVO_API_KEY` | Chave de acesso da API do Brevo para envio de emails |
+| `BREVO_SENDER_EMAIL` | Email do remetente verificado no Brevo |
 
 > Nenhum valor real está versionado no repositório. Consulte `.env.example` para a lista completa.
 
@@ -142,8 +143,9 @@ docker compose up --build
 ## ⚠️ Limitações conhecidas
 
 - **Limite da API externa:** o plano gratuito da SeuRastreio permite apenas **50 consultas por mês**. Por isso o scheduler foi configurado para rodar uma vez por dia, o que é suficiente considerando que uma encomenda leva em média 1 a 2 semanas para ser entregue.
+- **Envio de email via API HTTP:** a maioria das plataformas de hospedagem gratuita bloqueia conexões SMTP de saída (portas 465/587). Por esse motivo o envio de email foi implementado usando a **API HTTP do Brevo** ao invés de SMTP tradicional — o que garante compatibilidade com qualquer plataforma de hospedagem.
 - **Banco de dados:** em produção, a aplicação utiliza o [Neon](https://neon.tech) (PostgreSQL serverless gratuito) ao invés de um container local, evitando expiração de dados.
-- **Cold start:** a hospedagem gratuita no [Render](https://render.com) entra em modo inativo após períodos sem uso, podendo gerar uma resposta mais lenta na primeira requisição.
+- **Cold start:** a hospedagem gratuita no [Render](https://render.com) entra em modo inativo após períodos sem uso, podendo gerar uma resposta mais lenta na primeira requisição. Para contornar isso, o [UptimeRobot](https://uptimerobot.com) é utilizado para manter a aplicação sempre ativa.
 
 ---
 
@@ -161,14 +163,16 @@ mvn test
 
 Este é um projeto de portfólio desenvolvido com foco em demonstrar:
 
-- Integração com APIs externas
+- Integração com APIs externas via OpenFeign
 - Persistência de dados relacionais com JPA
 - Agendamento de tarefas com Spring Scheduler
-- Notificações automáticas por email
+- Notificações automáticas por email via API HTTP (Brevo)
 - Separação de responsabilidades e boas práticas de arquitetura
-- Testes de integração
-- Containerização com Docker
-- Deploy em ambiente de produção
+- Tratamento centralizado de exceções
+- Testes de integração com H2 e Mockito
+- Containerização com Docker e multi-stage build
+- Deploy em ambiente de produção com banco de dados cloud (Neon)
+- Decisões técnicas conscientes frente a limitações reais de infraestrutura
 
 ---
 
