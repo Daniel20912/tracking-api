@@ -2,11 +2,12 @@ package com.danieloliveira.tracking.scheduler;
 
 import com.danieloliveira.tracking.client.TrackingClient;
 import com.danieloliveira.tracking.client.dto.TrackResponse;
-import com.danieloliveira.tracking.email.BrevoClient;
+import com.danieloliveira.tracking.email.EmailSender;
 import com.danieloliveira.tracking.event.Event;
 import com.danieloliveira.tracking.event.EventRepository;
 import com.danieloliveira.tracking.tracking.Tracking;
 import com.danieloliveira.tracking.tracking.TrackingRepository;
+import com.danieloliveira.tracking.util.DateUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,8 +17,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -26,8 +27,9 @@ import static org.mockito.Mockito.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class SchedulerIntegrationTest {
 
-    private static final OffsetDateTime OLD_DATE = OffsetDateTime.of(2024, 1, 1, 10, 0, 0, 0, ZoneOffset.UTC);
-    private static final OffsetDateTime NEW_DATE = OffsetDateTime.of(2024, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC);
+    // Gerando a data usando o MESMO conversor que o Scheduler usa
+    private static final OffsetDateTime OLD_DATE = DateUtils.toOffsetDateTime(LocalDateTime.of(2024, 1, 1, 10, 0, 0));
+    private static final OffsetDateTime NEW_DATE = DateUtils.toOffsetDateTime(LocalDateTime.of(2024, 1, 2, 10, 0, 0));
     @Autowired
     private Scheduler scheduler;
     @Autowired
@@ -39,7 +41,7 @@ class SchedulerIntegrationTest {
     @MockitoBean
     private TrackingUpdateService trackingUpdateService;
     @MockitoBean
-    private BrevoClient brevoClient; // necessário para o contexto subir
+    private EmailSender emailSender;
 
     @BeforeEach
     void setUp() {
@@ -60,6 +62,7 @@ class SchedulerIntegrationTest {
                 .details("De Curitiba para São Paulo")
                 .dateEvent(OLD_DATE)
                 .location("Curitiba/PR")
+                .destination("São Paulo/SP")
                 .tracking(savedTracking)
                 .build());
     }
