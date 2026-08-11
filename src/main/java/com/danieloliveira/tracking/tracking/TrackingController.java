@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,7 +26,7 @@ public class TrackingController {
     )
     @ApiResponses(value = {
             @ApiResponse(
-                    responseCode = "200",
+                    responseCode = "201",
                     description = "Tracking successfully registered",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TrackingResponseDTO.class))
             ),
@@ -41,6 +42,7 @@ public class TrackingController {
             )
     })
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public TrackingResponseDTO registerNewTracking(@Valid @RequestBody TrackingRequestDTO trackingRequestDTO) {
         return trackingService.registerNewTracking(trackingRequestDTO);
     }
