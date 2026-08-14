@@ -12,7 +12,7 @@ A API está hospedada e disponível para testes em:
 https://tracking-api-pb24.onrender.com
 ```
 
-> ⚠️ A aplicação está em um plano gratuito que entra em modo inativo após períodos sem uso. A primeira requisição após inatividade pode levar até 30 segundos para responder.
+> ⚠️ A aplicação está sempre ativa graças ao UptimeRobot. Porém, o banco e dados (Neon serverless) pode suspender após períodos de inatividade — a primeira requisição após essa suspensão pode levar alguns segundos a mais para responder enquanto o banco acorda.
 
 A documentação interativa dos endpoints (Swagger) está disponível em:
 
@@ -136,17 +136,19 @@ docker compose up --build
 | `BREVO_API_KEY` | Chave de acesso da API do Brevo para envio de emails |
 | `BREVO_SENDER_EMAIL` | Email do remetente verificado no Brevo |
 
-> Nenhum valor real está versionado no repositório. Consulte `.env.example` para a lista completa.
+> Nenhum valor real está versionado no repositório.
 
 ---
 
 ## ⚠️ Limitações conhecidas
 
-- **Limite da API externa:** o plano gratuito da SeuRastreio permite apenas **50 consultas por mês**. Por isso o scheduler foi configurado para rodar uma vez por dia, o que é suficiente considerando que uma encomenda leva em média 1 a 2 semanas para ser entregue.
-- **Envio de email via API HTTP:** a maioria das plataformas de hospedagem gratuita bloqueia conexões SMTP de saída (portas 465/587). Por esse motivo o envio de email foi implementado usando a **API HTTP do Brevo** ao invés de SMTP tradicional — o que garante compatibilidade com qualquer plataforma de hospedagem.
-- **Banco de dados:** em produção, a aplicação utiliza o [Neon](https://neon.tech) (PostgreSQL serverless gratuito) ao invés de um container local, evitando expiração de dados.
-- **Cold start:** a hospedagem gratuita no [Render](https://render.com) entra em modo inativo após períodos sem uso, podendo gerar uma resposta mais lenta na primeira requisição. Para contornar isso, o [UptimeRobot](https://uptimerobot.com) é utilizado para manter a aplicação sempre ativa.
+> As limitações abaixo são inerentes ao uso de infraestrutura gratuita e fazem parte do contexto de um projeto de portfólio e estudo. Em um ambiente de produção real, cada uma delas seria resolvida com recursos pagos e uma arquitetura mais robusta.
 
+- **Limite da API externa:** o plano gratuito da SeuRastreio permite apenas **50 consultas por mês**. Por isso o scheduler foi configurado para rodar uma vez por dia, o que é suficiente considerando que uma encomenda leva em média 1 a 2 semanas para ser entregue. Em produção, um plano sem limitação de requisições permitiria intervalos muito menores e notificações mais próximas do tempo real.
+- **Envio de email via API HTTP:** a maioria das plataformas de hospedagem gratuita bloqueia conexões SMTP de saída (portas 465/587). Por esse motivo o envio de email foi implementado usando a **API HTTP do Brevo** ao invés de SMTP tradicional — o que garante compatibilidade com qualquer plataforma de hospedagem.
+- **Gerenciamento de conexões com o banco:** o banco de dados no Neon (serverless) suspende automaticamente após períodos de inatividade para economizar recursos. Para evitar erros de conexão obsoleta, o HikariCP foi configurado com um `max-lifetime` de 5 minutos — garantindo que conexões antigas sejam descartadas e recriadas antes de causarem falhas. Existe uma pequena janela de risco entre o banco suspender e a conexão ser descartada, mas o mecanismo de validação nativo do HikariCP cobre esse cenário na grande maioria dos casos.
+- **Cold start:** a hospedagem gratuita no [Render](https://render.com) entra em modo inativo após períodos sem uso, podendo gerar uma resposta mais lenta na primeira requisição. Para contornar isso, o [UptimeRobot](https://uptimerobot.com) é utilizado para manter a aplicação sempre ativa.
+- **Mensageria assíncrona:** o envio de email é feito de forma síncrona dentro do scheduler. Em um sistema de produção real, o ideal seria publicar um evento em uma fila (como Kafka ou RabbitMQ) para desacoplar a detecção da atualização do envio da notificação — ganhando resiliência e escalabilidade.
 ---
 
 ## 🧪 Testes
