@@ -20,6 +20,15 @@ A documentação interativa dos endpoints (Swagger) está disponível em:
 https://tracking-api-pb24.onrender.com/swagger-ui.html
 ```
 
+### 🖥️ Interface Web
+
+Um frontend foi desenvolvido para facilitar o uso da API, disponível em:
+
+```
+https://daniel20912.github.io/tracking-frontend
+```
+
+A interface permite cadastrar um novo rastreio informando o código e o email, consultar o histórico completo de eventos de qualquer rastreio já cadastrado, e visualizar as atualizações em uma timeline organizada cronologicamente. Todas as mensagens de erro retornadas pela API são exibidas diretamente na interface.
 ---
 
 ## 🧠 Como funciona
