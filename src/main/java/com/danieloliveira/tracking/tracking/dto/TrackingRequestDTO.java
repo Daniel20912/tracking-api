@@ -14,6 +14,7 @@ public class TrackingRequestDTO {
     @NotBlank(message = "Code cannot be empty")
     private String code;
 
+    @NotBlank(message = "Email cannot be empty")
     @Email(message = "Invalid email format", regexp = "^[a-zA-Z0-9.+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
     private String email;
 }

@@ -1,10 +1,13 @@
 package com.danieloliveira.tracking.client;
 
 
+import com.danieloliveira.tracking.client.dto.TrackRequest;
 import com.danieloliveira.tracking.client.dto.TrackResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(
         name = "trackingClient",
@@ -13,6 +16,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 )
 public interface TrackingClient {
 
-    @GetMapping("/api/public/rastreio/{code}")
-    TrackResponse findTrack(@PathVariable String code);
+    @PostMapping("/Track")
+    TrackResponse track(@RequestBody TrackRequest request);
+
+    default TrackResponse findTrack(String code) {
+        return track(TrackRequest.correios(code));
+    }
 }
