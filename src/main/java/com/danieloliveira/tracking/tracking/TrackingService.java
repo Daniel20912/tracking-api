@@ -12,12 +12,13 @@ import com.danieloliveira.tracking.tracking.dto.TrackingRequestDTO;
 import com.danieloliveira.tracking.tracking.dto.TrackingResponseDTO;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TrackingService {
@@ -27,26 +28,35 @@ public class TrackingService {
     private final EventService eventService;
 
     @Transactional
-    public TrackingResponseDTO registerNewTracking(TrackingRequestDTO trackingRequestDTO) {
-        if (trackingRepository.existsByCode(trackingRequestDTO.getCode())) {
+    public TrackingResponseDTO registerNewTracking(TrackingRequestDTO request) {
+        String code = request.getCode();
+
+        if (trackingRepository.existsByCode(code)) {
             throw new TrackingCodeAlreadyExistsException("Code already exists!");
         }
 
         TrackResponse trackResponse;
         try {
-            trackResponse = trackingClient.findTrack(trackingRequestDTO.getCode());
+            trackResponse = trackingClient.findTrack(code);
         } catch (FeignException ex) {
-            throw new ExternalServiceException("Unable to access tracking provider" + ex.getMessage());
+            log.error("Tracking provider error. Status {}: {}", ex.status(), ex.contentUTF8());
+            throw new ExternalServiceException("Unable to access tracking provider");
         }
 
-        if (!trackResponse.success()) throw new TrackingNotFoundException("Tracking code not found!");
+        if (trackResponse == null || !trackResponse.found() || trackResponse.payload() == null) {
+            throw new TrackingNotFoundException("Tracking code not found!");
+        }
 
-        Tracking trackingEntity = toTrackingEntity(trackResponse, trackingRequestDTO);
-        trackingRepository.save(trackingEntity);
+        Tracking tracking = trackingRepository.save(toTrackingEntity(code, request.getEmail()));
 
-        var event = eventService.saveEvent(trackResponse.eventoMaisRecente(), trackingEntity);
+        List<Event> events = eventService.saveNewEvents(trackResponse.payload().eventos(), tracking);
 
-        return new TrackingResponseDTO(trackingEntity, List.of(new EventResponseDTO(event)));
+        if (!events.isEmpty() && "BDE".equals(events.getLast().getCode())) {
+            tracking.setDelivered(true);
+            trackingRepository.save(tracking);
+        }
+
+        return new TrackingResponseDTO(tracking, events.stream().map(EventResponseDTO::new).toList());
     }
 
     public TrackingResponseDTO findTrackingByCode(String code) {
@@ -61,14 +71,11 @@ public class TrackingService {
 
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private Tracking toTrackingEntity(TrackResponse trackResponse, TrackingRequestDTO trackingRequestDTO) {
-        boolean isDelivered = Objects.equals(trackResponse.eventoMaisRecente().codigo(), "BDE");
-
+    private Tracking toTrackingEntity(String code, String email) {
         return Tracking.builder()
-                .code(trackResponse.codigo())
-                .email(trackingRequestDTO.getEmail())
-                .delivered(isDelivered)
+                .code(code)
+                .email(email)
+                .delivered(false)
                 .build();
     }
-
 }

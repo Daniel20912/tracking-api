@@ -3,6 +3,7 @@ package com.danieloliveira.tracking.email;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 @Service
@@ -27,19 +28,21 @@ public class EmailTemplate {
                 </body>
             </html>
             """;
+    private static final ZoneId BRAZIL_ZONE = ZoneId.of("America/Sao_Paulo");
 
     public String buildSubject(String code) {
         return String.format(SUBJECT, code);
     }
 
     public String buildHtml(String code, String description, String local, OffsetDateTime date) {
-        return String.format(HTML_TEMPLATE, code, description, local, formatDate(date));
+        String safeLocal = (local == null || local.isBlank()) ? "Não informado" : local;
+        return String.format(HTML_TEMPLATE, code, description, safeLocal, formatDate(date));
     }
 
     public String formatDate(OffsetDateTime date) {
         if (date == null)
             return "";
 
-        return date.format(DATE_TIME_FORMATTER);
+        return date.atZoneSameInstant(BRAZIL_ZONE).format(DATE_TIME_FORMATTER);
     }
 }
