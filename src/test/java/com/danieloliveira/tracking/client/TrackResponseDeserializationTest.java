@@ -15,19 +15,32 @@ class TrackResponseDeserializationTest {
 
     private static final String JSON = """
             {
-              "codigo": "BR123456789BR",
-              "status": "found",
-              "success": true,
-              "eventoMaisRecente": {
-                "codigo": "BDE",
-                "descricao": "Objeto entregue ao destinatário",
-                "detalhe": "Entrega realizada",
-                "data": "2026-01-15T14:30:00.000Z",
-                "local": "São Paulo/SP",
-                "destino": null
+              "carrier": "CARRIER_CORREIOS",
+              "status": "TRACKING_STATUS_FOUND",
+              "payload": {
+                "codObjeto": "BR123456789BR",
+                "dtPrevista": "2026-01-20",
+                "situacao": "Entregue",
+                "eventos": [
+                  {
+                    "codigo": "BDE",
+                    "descricao": "Objeto entregue ao destinatário",
+                    "detalhe": "Entrega realizada",
+                    "dtHrCriado": {
+                      "date": "2026-01-15 14:30:00.000",
+                      "timezone": "America/Sao_Paulo"
+                    },
+                    "unidade": {
+                      "tipo": "UNIDADE_DE_DISTRIBUICAO",
+                      "endereco": {
+                        "cidade": "São Paulo",
+                        "uf": "SP"
+                      }
+                    }
+                  }
+                ]
               },
-              "linkDetalhesCompletos": "https://seurastreio.com.br/objetos/BR123456789BR",
-              "message": "Evento mais recente encontrado."
+              "linkDetalhesCompletos": "https://seurastreio.com.br/objetos/BR123456789BR"
             }
             """;
     @Autowired
@@ -38,35 +51,33 @@ class TrackResponseDeserializationTest {
     void shouldDeserializeRootFieldsCorrectly() throws Exception {
         var trackResponse = objectMapper.readValue(JSON, TrackResponse.class);
 
-        assertThat(trackResponse.codigo()).isEqualTo("BR123456789BR");
-        assertThat(trackResponse.status()).isEqualTo("found");
-        assertThat(trackResponse.success()).isTrue();
-        assertThat(trackResponse.message()).isEqualTo("Evento mais recente encontrado.");
+        assertThat(trackResponse.carrier()).isEqualTo("CARRIER_CORREIOS");
+        assertThat(trackResponse.status()).isEqualTo("TRACKING_STATUS_FOUND");
+        assertThat(trackResponse.found()).isTrue();
+        assertThat(trackResponse.payload().codObjeto()).isEqualTo("BR123456789BR");
     }
 
     @Test
     @DisplayName("Deve deserializar corretamente os campos do eventoMaisRecente")
     void shouldDeserializeEventResponseFieldsCorrectly() throws Exception {
-        var event = objectMapper.readValue(JSON, TrackResponse.class).eventoMaisRecente();
+        var event = objectMapper.readValue(JSON, TrackResponse.class).payload().eventos().getFirst();
 
         assertThat(event.codigo()).isEqualTo("BDE");
         assertThat(event.descricao()).isEqualTo("Objeto entregue ao destinatário");
-        assertThat(event.detalhe()).isEqualTo("Entrega realizada");
-        assertThat(event.local()).isEqualTo("São Paulo/SP");
-        assertThat(event.destino()).isNull(); // destino null é válido
+        assertThat(event.details()).isEqualTo("Entrega realizada");
+        assertThat(event.location()).isEqualTo("São Paulo/SP");
     }
 
     @Test
     @DisplayName("Deve deserializar a data corretamente como OffsetDateTime")
     void shouldDeserializeDateAsOffsetDateTime() throws Exception {
-        var event = objectMapper.readValue(JSON, TrackResponse.class).eventoMaisRecente();
+        var event = objectMapper.readValue(JSON, TrackResponse.class).payload().eventos().getFirst();
 
-        assertThat(event.data()).isNotNull();
-        assertThat(event.data().getYear()).isEqualTo(2026);
-        assertThat(event.data().getMonthValue()).isEqualTo(1);
-        assertThat(event.data().getDayOfMonth()).isEqualTo(15);
-        assertThat(event.data().getHour()).isEqualTo(14);
-        assertThat(event.data().getMinute()).isEqualTo(30);
+        assertThat(event.occurredAt()).isNotNull();
+        assertThat(event.occurredAt().getYear()).isEqualTo(2026);
+        assertThat(event.occurredAt().getMonthValue()).isEqualTo(1);
+        assertThat(event.occurredAt().getDayOfMonth()).isEqualTo(15);
+        assertThat(event.occurredAt().getHour()).isEqualTo(14);
     }
 
     @Test

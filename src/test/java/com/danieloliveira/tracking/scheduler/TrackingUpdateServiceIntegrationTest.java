@@ -3,6 +3,7 @@ package com.danieloliveira.tracking.scheduler;
 import com.danieloliveira.tracking.client.dto.TrackResponse;
 import com.danieloliveira.tracking.email.BrevoClient;
 import com.danieloliveira.tracking.email.EmailSender;
+import com.danieloliveira.tracking.event.Event;
 import com.danieloliveira.tracking.event.EventRepository;
 import com.danieloliveira.tracking.exception.EmailSendException;
 import com.danieloliveira.tracking.tracking.Tracking;
@@ -16,8 +17,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -30,7 +30,6 @@ import static org.mockito.Mockito.verify;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class TrackingUpdateServiceIntegrationTest {
 
-    private static final OffsetDateTime EVENT_DATE = OffsetDateTime.of(2024, 1, 15, 10, 0, 0, 0, ZoneOffset.UTC);
     @Autowired
     private TrackingUpdateService trackingUpdateService;
     @Autowired
@@ -42,6 +41,16 @@ class TrackingUpdateServiceIntegrationTest {
     @MockitoBean
     private BrevoClient brevoClient;
     private Tracking savedTracking;
+
+    private static TrackResponse.EventResponse event(String code, String description, String details) {
+        return new TrackResponse.EventResponse(
+                code,
+                description,
+                details,
+                new TrackResponse.EventDate("2024-01-15 10:00:00", "America/Sao_Paulo"),
+                new TrackResponse.Unidade("UNIDADE", new TrackResponse.Endereco("Curitiba", "PR"))
+        );
+    }
 
     @BeforeEach
     void setUp() {
@@ -66,11 +75,9 @@ class TrackingUpdateServiceIntegrationTest {
     @Test
     @DisplayName("Deve salvar o novo evento no banco")
     void shouldSaveEventInDatabase() {
-        var eventData = new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE.toLocalDateTime(), "Curitiba/PR", "São Paulo/SP"
-        );
+        var eventData = event("OEC", "Objeto em trânsito", "Em trânsito");
 
-        trackingUpdateService.processTrackingUpdate(savedTracking, eventData);
+        trackingUpdateService.processTrackingUpdate(savedTracking, List.of(eventData));
 
         assertThat(eventRepository.findAll()).hasSize(1);
         var savedEvent = eventRepository.findAll().getFirst();
@@ -81,11 +88,9 @@ class TrackingUpdateServiceIntegrationTest {
     @Test
     @DisplayName("Deve marcar tracking como entregue quando código do evento é BDE")
     void shouldMarkTrackingAsDeliveredWhenBDE() {
-        var bdeEvent = new TrackResponse.EventResponse(
-                "BDE", "Objeto entregue ao destinatário", "Entregue", EVENT_DATE.toLocalDateTime(), "São Paulo/SP", null
-        );
+        var bdeEvent = event("BDE", "Objeto entregue ao destinatário", "Entregue");
 
-        trackingUpdateService.processTrackingUpdate(savedTracking, bdeEvent);
+        trackingUpdateService.processTrackingUpdate(savedTracking, List.of(bdeEvent));
 
         assertThat(trackingRepository.findAll().getFirst().isDelivered()).isTrue();
     }
@@ -93,11 +98,9 @@ class TrackingUpdateServiceIntegrationTest {
     @Test
     @DisplayName("Não deve marcar tracking como entregue quando código não é BDE")
     void shouldNotMarkTrackingAsDeliveredWhenNotBDE() {
-        var eventData = new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE.toLocalDateTime(), "Curitiba/PR", "São Paulo/SP"
-        );
+        var eventData = event("OEC", "Objeto em trânsito", "Em trânsito");
 
-        trackingUpdateService.processTrackingUpdate(savedTracking, eventData);
+        trackingUpdateService.processTrackingUpdate(savedTracking, List.of(eventData));
 
         assertThat(trackingRepository.findAll().getFirst().isDelivered()).isFalse();
     }
@@ -105,29 +108,25 @@ class TrackingUpdateServiceIntegrationTest {
     @Test
     @DisplayName("Deve enviar email após salvar o evento")
     void shouldSendEmailAfterSavingEvent() {
-        var eventData = new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE.toLocalDateTime(), "Curitiba/PR", "São Paulo/SP"
-        );
+        var eventData = event("OEC", "Objeto em trânsito", "Em trânsito");
 
-        trackingUpdateService.processTrackingUpdate(savedTracking, eventData);
+        trackingUpdateService.processTrackingUpdate(savedTracking, List.of(eventData));
 
         verify(emailSender).sendEmail(
                 argThat(t -> t.getCode().equals("BR123456789")),
-                any(TrackResponse.EventResponse.class)
+                any(Event.class)
         );
     }
 
     @Test
     @DisplayName("Não deve lançar exceção quando envio de email falha, e deve salvar o evento mesmo assim")
     void shouldNotThrowExceptionWhenEmailFailsAndShouldStillSaveEvent() {
-        var eventData = new TrackResponse.EventResponse(
-                "OEC", "Objeto em trânsito", "Em trânsito", EVENT_DATE.toLocalDateTime(), "Curitiba/PR", "São Paulo/SP"
-        );
+        var eventData = event("OEC", "Objeto em trânsito", "Em trânsito");
         doThrow(new EmailSendException("Falha no envio"))
                 .when(emailSender).sendEmail(any(), any());
 
         assertThatNoException().isThrownBy(() ->
-                trackingUpdateService.processTrackingUpdate(savedTracking, eventData)
+                trackingUpdateService.processTrackingUpdate(savedTracking, List.of(eventData))
         );
         assertThat(eventRepository.findAll()).hasSize(1); // evento salvo mesmo com email falhando
     }
