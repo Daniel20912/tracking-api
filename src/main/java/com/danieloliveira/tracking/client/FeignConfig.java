@@ -3,7 +3,6 @@ package com.danieloliveira.tracking.client;
 import feign.RequestInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 public class FeignConfig {
 
@@ -13,6 +12,6 @@ public class FeignConfig {
     @Bean
     public RequestInterceptor requestInterceptor() {
         return template ->
-                template.header("Authorization", "ApiKey " + apiKey);
+                template.header("Authorization", "Apikey " + apiKey);
     }
 }
